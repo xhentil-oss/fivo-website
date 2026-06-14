@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { logout, getSession } from './auth.js'
 import { resetOverlay } from '../utils/store.js'
 import Icon from '../components/Icon.jsx'
@@ -36,7 +36,7 @@ export default function AdminLayout() {
 
   return (
     <>
-      <Helmet><title>Admin | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Helmet>
+      <Head><title>Admin | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Head>
       <div className="min-h-screen bg-slate-50">
         {/* Top bar (mobile) */}
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">

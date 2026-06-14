@@ -9,12 +9,16 @@ Marketing-agency website for **Fivo LLC** (Sterling Heights, MI). React + Vite +
 - `npm run preview` — preview the build
 
 ## Stack
-React 18, Vite 5, React Router 6 (`BrowserRouter`), Tailwind 3, `react-helmet-async` for SEO/head. No backend yet — content is local.
+React 18, Vite 5, **`vite-react-ssg`** (static pre-rendering on top of React Router 6 data router), Tailwind 3. Head/meta via `vite-react-ssg`'s `<Head>`. No backend yet — content is local.
 
 ## Architecture (read before editing)
+- **Static site generation (SSG).** `npm run build` runs `vite-react-ssg build`, which pre-renders **every** public route to its own static `index.html` (real title/meta/canonical/OG/JSON-LD + content baked into the HTML — not a client-only SPA shell). `dirStyle: 'nested'` → `/about/index.html`. Crawlers and link-preview scrapers see full HTML without running JS; the page then hydrates into a normal SPA.
+  - **Routes live in `src/App.jsx` as a data-router array** (`export const routes`), consumed by `ViteReactSSG` in `src/main.jsx`. Dynamic routes carry `getStaticPaths()` to enumerate concrete URLs (services, locations, every service×location). Public pages use the data-router `lazy: () => ({ Component })` form so SSG can resolve them; admin pages use `React.lazy` (client-only).
+  - **`/admin` is excluded from SSG** via `ssgOptions.includedRoutes` in `vite.config.js` (also drops `:`-templates and `*`). It runs client-only behind the demo auth guard and is `noindex`.
+  - **SSG-safety:** nothing may touch `window`/`document`/`localStorage` during render (only inside `useEffect`). `store.js` reads `localStorage` inside try/catch, so it safely falls back to seed data when pre-rendering in Node — keep that pattern.
 - **`src/utils/store.js` is the data seam.** All editable content is read through it (`getServices`, `getLocations`, `getReviews`, `getCaseStudies`, `getCompany`, `getServiceLocationPage`) and written through it (`saveCollection`, `saveServiceLocationPage`). Today it reads `src/data/*` with a `localStorage` overlay. To add a real backend (Supabase/Strapi/custom API), swap the function bodies here — **do not** make components import data directly.
 - **Programmatic SEO:** `src/utils/serviceContent.js` generates per-service content; `src/utils/serviceLocation.js` generates a unique page for every service × location. Routes: `/services/:serviceSlug/:locationSlug`. Keep generated copy unique per combo (no thin/duplicate content).
-- **SEO:** every page renders `<SEOHead>` with a unique title/description + JSON-LD via `src/utils/schema.js` (Organization, LocalBusiness, Service, FAQ, Breadcrumb).
+- **SEO:** every page renders `<SEOHead>` (uses `<Head>` from `vite-react-ssg`) with a unique title/description + JSON-LD via `src/utils/schema.js` (Organization, LocalBusiness, Service, FAQ, Breadcrumb). `index.html` has **no** static `<title>`/description on purpose — `<SEOHead>` injects them per page; don't re-add them or you'll get duplicate tags.
 - **Seed data:** `src/data/` — `company.js` (NAP/brand), `services.js` (37), `locations.js` (15), `reviews.js`, `caseStudies.js`.
 - **Admin:** `src/admin/` — dashboard + managers. Routing in `src/App.jsx` (lazy-loaded, `RequireAuth` guard).
 

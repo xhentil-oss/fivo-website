@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { company } from '../data/company.js'
 
 // Central SEO component. Renders title, meta description, canonical, Open Graph,
@@ -17,7 +17,7 @@ export default function SEOHead({
   const ogImage = image || `${company.website}/og-default.png`
 
   return (
-    <Helmet>
+    <Head>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonical} />
@@ -43,6 +43,6 @@ export default function SEOHead({
           {JSON.stringify(schema)}
         </script>
       ))}
-    </Helmet>
+    </Head>
   )
 }

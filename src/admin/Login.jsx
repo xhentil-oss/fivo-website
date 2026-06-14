@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { Head } from 'vite-react-ssg'
 import { login, DEMO_CREDENTIALS } from './auth.js'
 import Icon from '../components/Icon.jsx'
 
@@ -24,7 +24,7 @@ export default function Login() {
 
   return (
     <>
-      <Helmet><title>Admin Login | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Helmet>
+      <Head><title>Admin Login | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Head>
       <div className="flex min-h-screen items-center justify-center bg-mesh px-4">
         <div className="w-full max-w-md">
           <Link to="/" className="mb-6 flex items-center justify-center gap-2 font-display text-xl font-extrabold text-ink">

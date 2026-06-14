@@ -43,8 +43,9 @@ Requires Node 18+ (built and tested on Node 22).
 **Design & UX**
 - Blue + orange brand system, custom inline icon set (no icon-library dependency), sticky header with services mega-menu and locations dropdown, click-to-call, mobile menu, accessible FAQ accordions, scroll reveals (respecting `prefers-reduced-motion`), loading states, and a 404.
 
-**Performance**
-- Route-level code splitting via `React.lazy` + `Suspense`, manual vendor chunking, and lean CSS. The production build emits small per-route chunks.
+**Performance & SSG**
+- **Static pre-rendering** via [`vite-react-ssg`](https://github.com/Daydreamer-riri/vite-react-ssg): `npm run build` emits a real, fully-rendered `index.html` for **every** public route (all 614 — static pages, services, locations, and each service×location combo), with the correct per-page title/meta/canonical/OG and JSON-LD baked into the HTML. Crawlers and social link-preview scrapers get complete content without executing JavaScript; the page then hydrates into the SPA. `/admin` stays client-only and is excluded from pre-rendering.
+- Route-level code splitting, manual vendor chunking, and lean CSS keep per-route payloads small.
 
 ---
 

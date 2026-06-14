@@ -5,20 +5,21 @@
   "type": "module",
   "description": "Premium marketing agency website for Fivo LLC — React + Vite + Tailwind",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite-react-ssg dev",
     "sitemap": "node scripts/generate-sitemap.js",
     "prebuild": "node scripts/generate-sitemap.js",
-    "build": "vite build",
+    "build": "vite-react-ssg build",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^6.26.2",
+    "vite-react-ssg": "^0.9.1-beta.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",

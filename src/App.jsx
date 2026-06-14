@@ -1,25 +1,18 @@
 import { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, useLocation, Outlet } from 'react-router-dom'
-import { HelmetProvider } from 'react-helmet-async'
+import { useLocation, Outlet } from 'react-router-dom'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import RequireAuth from './admin/RequireAuth.jsx'
+import { services } from './data/services.js'
+import { locations } from './data/locations.js'
 
-// Lazy-load route components for code splitting / faster first load.
-const Home = lazy(() => import('./pages/Home.jsx'))
-const About = lazy(() => import('./pages/About.jsx'))
-const Services = lazy(() => import('./pages/Services.jsx'))
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail.jsx'))
-const ServiceLocationPage = lazy(() => import('./pages/ServiceLocationPage.jsx'))
-const LocationDetail = lazy(() => import('./pages/LocationDetail.jsx'))
-const CaseStudies = lazy(() => import('./pages/CaseStudies.jsx'))
-const Contact = lazy(() => import('./pages/Contact.jsx'))
-const Privacy = lazy(() => import('./pages/Privacy.jsx'))
-const Terms = lazy(() => import('./pages/Terms.jsx'))
-const NotFound = lazy(() => import('./pages/NotFound.jsx'))
+// Route-level code splitting. We use the React Router data-router `lazy` form
+// (`() => ({ Component })`) for public routes so vite-react-ssg can resolve and
+// pre-render each page to static HTML at build time. Admin routes stay
+// client-only (React.lazy), since they're excluded from SSG.
+const page = (loader) => async () => ({ Component: (await loader()).default })
 
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
-const Login = lazy(() => import('./admin/Login.jsx'))
 const DashboardHome = lazy(() => import('./admin/DashboardHome.jsx'))
 const ManageServices = lazy(() => import('./admin/ManageServices.jsx'))
 const ManageReviews = lazy(() => import('./admin/ManageReviews.jsx'))
@@ -44,6 +37,7 @@ function PageLoader() {
 function PublicLayout() {
   return (
     <>
+      <ScrollToTop />
       <Header />
       <main id="main">
         <Suspense fallback={<PageLoader />}>
@@ -55,43 +49,68 @@ function PublicLayout() {
   )
 }
 
-export default function App() {
+// Admin shell: client-side auth guard + lazy-loaded dashboard layout.
+function AdminShell() {
   return (
-    <HelmetProvider>
-      <ScrollToTop />
-      <Routes>
-        {/* Public site */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/services/:serviceSlug" element={<ServiceDetail />} />
-          <Route path="/services/:serviceSlug/:locationSlug" element={<ServiceLocationPage />} />
-          <Route path="/locations/:locationSlug" element={<LocationDetail />} />
-          <Route path="/case-studies" element={<CaseStudies />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-
-        {/* Admin (no public chrome) */}
-        <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
-        <Route
-          path="/admin"
-          element={
-            <RequireAuth>
-              <Suspense fallback={<PageLoader />}><AdminLayout /></Suspense>
-            </RequireAuth>
-          }
-        >
-          <Route index element={<Suspense fallback={<PageLoader />}><DashboardHome /></Suspense>} />
-          <Route path="services" element={<Suspense fallback={<PageLoader />}><ManageServices /></Suspense>} />
-          <Route path="reviews" element={<Suspense fallback={<PageLoader />}><ManageReviews /></Suspense>} />
-          <Route path="service-locations" element={<Suspense fallback={<PageLoader />}><ManageServiceLocations /></Suspense>} />
-          <Route path="settings" element={<Suspense fallback={<PageLoader />}><ManageSettings /></Suspense>} />
-        </Route>
-      </Routes>
-    </HelmetProvider>
+    <RequireAuth>
+      <Suspense fallback={<PageLoader />}>
+        <AdminLayout />
+      </Suspense>
+    </RequireAuth>
   )
 }
+const adminPage = (Component) => (
+  <Suspense fallback={<PageLoader />}><Component /></Suspense>
+)
+
+// Route tree as a data-router array (consumed by vite-react-ssg in main.jsx).
+// `getStaticPaths` enumerates the concrete URLs to pre-render for each dynamic
+// route. Paths are relative to the parent ('/') prefix.
+export const routes = [
+  {
+    path: '/',
+    element: <PublicLayout />,
+    children: [
+      { index: true, lazy: page(() => import('./pages/Home.jsx')) },
+      { path: 'about', lazy: page(() => import('./pages/About.jsx')) },
+      { path: 'services', lazy: page(() => import('./pages/Services.jsx')) },
+      {
+        path: 'services/:serviceSlug',
+        lazy: page(() => import('./pages/ServiceDetail.jsx')),
+        getStaticPaths: () => services.map((s) => `services/${s.slug}`),
+      },
+      {
+        path: 'services/:serviceSlug/:locationSlug',
+        lazy: page(() => import('./pages/ServiceLocationPage.jsx')),
+        getStaticPaths: () =>
+          services.flatMap((s) => locations.map((l) => `services/${s.slug}/${l.slug}`)),
+      },
+      {
+        path: 'locations/:locationSlug',
+        lazy: page(() => import('./pages/LocationDetail.jsx')),
+        getStaticPaths: () => locations.map((l) => `locations/${l.slug}`),
+      },
+      { path: 'case-studies', lazy: page(() => import('./pages/CaseStudies.jsx')) },
+      { path: 'contact', lazy: page(() => import('./pages/Contact.jsx')) },
+      { path: 'privacy', lazy: page(() => import('./pages/Privacy.jsx')) },
+      { path: 'terms', lazy: page(() => import('./pages/Terms.jsx')) },
+      { path: '*', lazy: page(() => import('./pages/NotFound.jsx')) },
+    ],
+  },
+
+  // Admin (no public chrome). Excluded from SSG via includedRoutes in vite.config.js.
+  { path: '/admin/login', lazy: page(() => import('./admin/Login.jsx')) },
+  {
+    path: '/admin',
+    element: <AdminShell />,
+    children: [
+      { index: true, element: adminPage(DashboardHome) },
+      { path: 'services', element: adminPage(ManageServices) },
+      { path: 'reviews', element: adminPage(ManageReviews) },
+      { path: 'service-locations', element: adminPage(ManageServiceLocations) },
+      { path: 'settings', element: adminPage(ManageSettings) },
+    ],
+  },
+]
+
+export default routes
