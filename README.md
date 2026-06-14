@@ -115,7 +115,7 @@ Per the brief, demo content is clearly labeled and contains **no invented metric
 - [ ] Replace demo auth with real server-side authentication.
 - [ ] Connect `store.js` to your CMS/database.
 - [ ] Wire the contact form to a backend with validation, rate limiting, and spam protection.
-- [ ] Generate and host a real `sitemap.xml` (enumerate static routes + every service×location URL) and reference it in `robots.txt`.
+- [x] ~~Generate and host a real `sitemap.xml` (enumerate static routes + every service×location URL) and reference it in `robots.txt`.~~ — auto-generated at build time by `scripts/generate-sitemap.js` (`npm run sitemap`, runs as `prebuild`). Regenerate after adding services/locations.
 - [ ] Replace `DemoImage` placeholders with optimized real images and add `og-default.png`.
 - [ ] Add live Google Map embed on the contact page.
 - [ ] Review Privacy & Terms with counsel.

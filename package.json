@@ -6,6 +6,8 @@
   "description": "Premium marketing agency website for Fivo LLC — React + Vite + Tailwind",
   "scripts": {
     "dev": "vite",
+    "sitemap": "node scripts/generate-sitemap.js",
+    "prebuild": "node scripts/generate-sitemap.js",
     "build": "vite build",
     "preview": "vite preview"
   },
