@@ -27,7 +27,8 @@ React 18, Vite 5, React Router 6 (`BrowserRouter`), Tailwind 3, `react-helmet-as
 - **Never put `\uXXXX` escapes in JSX *text*** (e.g. between tags). JSX text is not a JS string, so it renders literally. Use the real character (`—`, `'`, `"`) or an HTML entity (`&mdash;`, `&rsquo;`). Inside JS string literals (object props, attributes) `\uXXXX` is fine.
 - **`vercel.json`** has an SPA rewrite so deep React Router routes don't 404 on refresh — keep it.
 - **`sitemap.xml` is generated, not hand-edited.** `scripts/generate-sitemap.js` enumerates static routes + every service, location, and service×location URL from `src/data/`. It runs automatically as the npm `prebuild` hook (and standalone via `npm run sitemap`). The output `public/sitemap.xml` is gitignored — never edit it by hand; change the data and rebuild. Base URL comes from `company.website`.
-- **Demo auth + contact form are NOT secure** (`src/admin/auth.js`, `src/pages/Contact.jsx`). Client-side only. Replace with real server-side auth and a backend-wired form before treating anything as production. Keep secrets server-side; only `VITE_`-prefixed env vars reach the browser.
+- **Demo auth is NOT secure** (`src/admin/auth.js`). Client-side only. Replace with real server-side auth before treating anything as production. Keep secrets server-side; only `VITE_`-prefixed env vars reach the browser.
+- **Contact form** (`src/pages/Contact.jsx`) POSTs to `VITE_CONTACT_ENDPOINT` when set (see `.env.example`), else runs in demo mode (nothing transmitted). It has a honeypot + client validation only — the receiving endpoint MUST still re-validate, rate-limit, and spam-check server-side.
 - Legal pages (`Privacy`, `Terms`) are templates pending counsel review.
 
 See `README.md` for the full production checklist.

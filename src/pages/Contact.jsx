@@ -23,28 +23,62 @@ const EMPTY = {
   website: '', service: '', location: '', budget: '', message: '',
 }
 
+// Optional submission endpoint. When set (e.g. a Formspree/Web3Forms URL or
+// your own /api/contact serverless function), the form POSTs real JSON. When
+// unset, the form stays in clearly-labeled demo mode (no data leaves the
+// browser). Only VITE_-prefixed vars reach the client, and an endpoint URL is
+// safe to expose — keep any API keys server-side behind your own function.
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || ''
+const IS_LIVE = Boolean(CONTACT_ENDPOINT)
+
 export default function Contact() {
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
-  const [status, setStatus] = useState('idle') // idle | submitting | success
+  const [status, setStatus] = useState('idle') // idle | submitting | success | error
+  // Honeypot: hidden from humans; bots that fill it are silently dropped.
+  const [trap, setTrap] = useState('')
 
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }]
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     const { valid, errors } = validateContactForm(form)
     setErrors(errors)
     if (!valid) return
 
     setStatus('submitting')
-    // DEMO ONLY — no real submission. In production, POST to your backend /
-    // email service here (with server-side validation, rate limiting, and
-    // spam/CAPTCHA checks). See README "Connecting a backend".
-    setTimeout(() => {
+
+    // Spam trap tripped — pretend success without sending anything.
+    if (trap) {
       setStatus('success')
       setForm(EMPTY)
-    }, 600)
+      return
+    }
+
+    // Demo mode: no endpoint configured, so nothing is transmitted.
+    if (!IS_LIVE) {
+      setTimeout(() => {
+        setStatus('success')
+        setForm(EMPTY)
+      }, 600)
+      return
+    }
+
+    // Live mode: POST the form as JSON. The backend MUST re-validate every
+    // field and apply rate limiting / spam checks server-side.
+    try {
+      const res = await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ ...form, source: 'website-contact-form' }),
+      })
+      if (!res.ok) throw new Error(`Request failed with ${res.status}`)
+      setStatus('success')
+      setForm(EMPTY)
+    } catch {
+      setStatus('error')
+    }
   }
 
   const field = 'mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-ink shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100'
@@ -82,14 +116,26 @@ export default function Contact() {
               </div>
               <h2 className="mt-4 text-2xl font-extrabold text-ink">Thanks — we've got it.</h2>
               <p className="mt-2 prose-body">
-                This is a demo confirmation. In the live site this request would be securely sent to the Fivo team, who'd
-                follow up within one business day. In the meantime, feel free to call us at{' '}
+                {IS_LIVE
+                  ? <>Your request is on its way to the Fivo team, who'll follow up within one business day. In the meantime, feel free to call us at </>
+                  : <>This is a demo confirmation. In the live site this request would be securely sent to the Fivo team, who'd follow up within one business day. In the meantime, feel free to call us at </>}
                 <a href={company.phoneHref} className="font-semibold text-brand-700">{company.phone}</a>.
               </p>
               <button onClick={() => setStatus('idle')} className="btn btn-ghost mt-6">Send another message</button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="card space-y-5">
+              {status === 'error' && (
+                <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  Something went wrong sending your message. Please try again, or call us at{' '}
+                  <a href={company.phoneHref} className="font-semibold underline">{company.phone}</a>.
+                </div>
+              )}
+              {/* Honeypot — visually hidden, off-screen, excluded from tab order. */}
+              <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+                <label htmlFor="company_url">Leave this field empty</label>
+                <input id="company_url" name="company_url" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} />
+              </div>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label className={labelCls} htmlFor="fullName">Full name *</label>
@@ -148,7 +194,9 @@ export default function Contact() {
                   {status === 'submitting' ? 'Sending…' : 'Request my free audit'}
                   {status !== 'submitting' && <Icon name="arrow" className="h-4 w-4" />}
                 </button>
-                <p className="text-xs text-ink-muted">We'll never share your details. Demo form — no data is stored.</p>
+                <p className="text-xs text-ink-muted">
+                  We'll never share your details.{!IS_LIVE && ' Demo form — no data is stored.'}
+                </p>
               </div>
             </form>
           )}
