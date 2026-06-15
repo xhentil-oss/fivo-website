@@ -80,7 +80,16 @@ export default function Home() {
 
           <Reveal delay={120}>
             <div className="relative">
-              <DemoImage label="Marketing analytics dashboard" aspect="aspect-[5/4]" icon={<Icon name="chart" className="h-10 w-10 text-brand-500" />} />
+              <img
+                src="/hero-home.webp"
+                alt="Marketing results dashboard and client project highlights from Fivo LLC"
+                width={1023}
+                height={852}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="w-full rounded-2xl shadow-card"
+              />
               <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-card sm:block">
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Qualified leads</p>
                 <p className="mt-1 flex items-center gap-2 text-2xl font-extrabold text-ink">
