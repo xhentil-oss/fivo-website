@@ -40,6 +40,28 @@ export const company = {
     'Data-driven campaigns',
     'Transparent monthly reporting',
   ],
+
+  // Social proof shown across the site (hero, body strip, footer).
+  // ⚠️ These are DEMO placeholders (isDemo: true → a "Demo" tag is shown, per the
+  // site's honesty rule). Before launch: set your REAL rating + review count +
+  // profile URL for each platform and flip isDemo to false. Do NOT publish
+  // invented numbers — fake ratings violate Google/Trustpilot terms and FTC rules.
+  socialProof: {
+    google: {
+      platform: 'Google',
+      rating: 5.0,
+      count: null, // e.g. 48 — number of reviews; null hides the count
+      url: 'https://www.google.com/search?q=Fivo+LLC+Sterling+Heights+MI',
+      isDemo: true,
+    },
+    trustpilot: {
+      platform: 'Trustpilot',
+      rating: 5.0,
+      count: null,
+      url: 'https://www.trustpilot.com/review/fivo.llc',
+      isDemo: true,
+    },
+  },
 }
 
 export const fullAddress = `${company.address.street}, ${company.address.city}, ${company.address.state} ${company.address.zip}`

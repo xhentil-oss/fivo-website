@@ -5,6 +5,7 @@ import ServiceCard from '../components/ServiceCard.jsx'
 import ReviewCard from '../components/ReviewCard.jsx'
 import CTASection from '../components/CTASection.jsx'
 import DemoImage from '../components/DemoImage.jsx'
+import { SocialProofInline, SocialProofStrip } from '../components/SocialProof.jsx'
 import Reveal from '../components/Reveal.jsx'
 import { company } from '../data/company.js'
 import { getHomepageServices } from '../data/services.js'
@@ -76,6 +77,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+            <SocialProofInline />
           </Reveal>
 
           <Reveal delay={120}>
@@ -109,6 +111,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Social proof (Google + Trustpilot) */}
+      <SocialProofStrip />
 
       {/* Problem */}
       <section className="section">

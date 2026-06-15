@@ -3,6 +3,7 @@ import { company, fullAddress } from '../data/company.js'
 import { getHomepageServices } from '../data/services.js'
 import { locations } from '../data/locations.js'
 import Icon from './Icon.jsx'
+import { SocialProofFooter } from './SocialProof.jsx'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -26,6 +27,9 @@ export default function Footer() {
               <li className="flex items-center gap-2.5"><Icon name="mail" className="h-4 w-4 text-accent-400" /> <a href={`mailto:${company.email}`} className="hover:text-white">{company.email}</a></li>
               <li className="flex items-center gap-2.5"><Icon name="calendar" className="h-4 w-4 text-accent-400" /> {company.hoursLabel}</li>
             </ul>
+            <div className="mt-6">
+              <SocialProofFooter />
+            </div>
           </div>
 
           <FooterCol title="Services">
