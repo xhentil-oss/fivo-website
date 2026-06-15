@@ -10,7 +10,7 @@ import { company } from '../data/company.js'
 import { getHomepageServices } from '../data/services.js'
 import { getReviews } from '../utils/store.js'
 import { caseStudies } from '../data/caseStudies.js'
-import { organizationSchema, localBusinessSchema } from '../utils/schema.js'
+import { organizationSchema, websiteSchema, localBusinessSchema } from '../utils/schema.js'
 
 const problems = [
   { icon: 'magnet', title: 'Not enough leads', text: 'Your phone is quiet and the pipeline feels unpredictable month to month.' },
@@ -47,7 +47,7 @@ export default function Home() {
       <SEOHead
         path="/"
         description="Fivo LLC helps businesses grow with SEO, paid ads, social media marketing, branding, and conversion-focused digital strategies. Get a free marketing audit."
-        schemas={[organizationSchema(), localBusinessSchema()]}
+        schemas={[organizationSchema(), websiteSchema(), localBusinessSchema()]}
       />
 
       {/* Hero */}

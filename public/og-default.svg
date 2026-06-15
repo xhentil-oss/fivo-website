@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B4EF5"/>
+      <stop offset="1" stop-color="#0B2A9E"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.15" r="0.7">
+      <stop stop-color="#3B6BFF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3B6BFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Logo mark -->
+  <g transform="translate(96, 96)">
+    <rect width="84" height="84" rx="22" fill="#ffffff"/>
+    <text x="42" y="60" font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif" font-size="52" font-weight="800" fill="#1B4EF5" text-anchor="middle">F</text>
+    <text x="108" y="58" font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif" font-size="46" font-weight="800" fill="#ffffff">Fivo<tspan fill="#FF7A2F">.</tspan></text>
+  </g>
+
+  <!-- Headline -->
+  <text x="96" y="330" font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif" font-size="74" font-weight="800" fill="#ffffff">Marketing that turns</text>
+  <text x="96" y="416" font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif" font-size="74" font-weight="800" fill="#ffffff">attention into <tspan fill="#FF7A2F">growth.</tspan></text>
+
+  <!-- Subline -->
+  <text x="98" y="500" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-size="30" font-weight="500" fill="#C9D6FF">SEO · Paid Ads · Social · Branding · Web</text>
+
+  <!-- Footer line -->
+  <text x="98" y="566" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-size="26" font-weight="600" fill="#ffffff">Fivo LLC</text>
+  <text x="220" y="566" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-size="26" font-weight="400" fill="#9DB2F0">· Sterling Heights, MI</text>
+</svg>
