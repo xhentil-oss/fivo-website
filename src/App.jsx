@@ -7,9 +7,8 @@ import { services } from './data/services.js'
 import { locations } from './data/locations.js'
 
 // Route-level code splitting. We use the React Router data-router `lazy` form
-// (`() => ({ Component })`) for public routes so vite-react-ssg can resolve and
-// pre-render each page to static HTML at build time. Admin routes stay
-// client-only (React.lazy), since they're excluded from SSG.
+// (`() => ({ Component })`) for public routes so the SSR server (createStaticHandler)
+// can resolve and render each page. Admin routes use React.lazy (client-only).
 const page = (loader) => async () => ({ Component: (await loader()).default })
 
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
@@ -63,7 +62,7 @@ const adminPage = (Component) => (
   <Suspense fallback={<PageLoader />}><Component /></Suspense>
 )
 
-// Route tree as a data-router array (consumed by vite-react-ssg in main.jsx).
+// Route tree as a data-router array (used by entry-client.jsx + entry-server.jsx).
 // `getStaticPaths` enumerates the concrete URLs to pre-render for each dynamic
 // route. Paths are relative to the parent ('/') prefix.
 export const routes = [

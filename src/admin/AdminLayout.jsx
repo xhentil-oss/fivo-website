@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Head } from 'vite-react-ssg'
+import { Helmet } from 'react-helmet-async'
 import { logout, getSession } from './auth.js'
-import { resetOverlay } from '../utils/store.js'
 import Icon from '../components/Icon.jsx'
 
 const NAV = [
@@ -23,20 +22,13 @@ export default function AdminLayout() {
     navigate('/admin/login', { replace: true })
   }
 
-  function handleReset() {
-    if (confirm('Reset all demo edits back to the original seed content? This clears your local changes.')) {
-      resetOverlay()
-      window.location.reload()
-    }
-  }
-
   const linkBase = 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition'
   const linkCls = ({ isActive }) =>
     `${linkBase} ${isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-soft hover:bg-slate-50'}`
 
   return (
     <>
-      <Head><title>Admin | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Head>
+      <Helmet><title>Admin | Fivo LLC</title><meta name="robots" content="noindex,nofollow" /></Helmet>
       <div className="min-h-screen bg-slate-50">
         {/* Top bar (mobile) */}
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
@@ -74,10 +66,8 @@ export default function AdminLayout() {
 
           {/* Content */}
           <main className="flex-1 p-5 lg:p-8">
-            <div className="mb-6 rounded-xl border border-accent-100 bg-accent-50/60 px-4 py-3 text-sm text-ink-soft">
-              <strong>Demo mode.</strong> Signed in as <span className="font-semibold">{session?.user}</span>. Changes save to your
-              browser only (localStorage) so you can preview live editing.{' '}
-              <button onClick={handleReset} className="font-semibold text-brand-700 underline">Reset demo content</button>
+            <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-ink-soft">
+              Signed in as <span className="font-semibold">{session?.user}</span>. Changes save to the MariaDB database and go live for all visitors.
             </div>
             <Outlet />
           </main>

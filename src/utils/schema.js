@@ -1,33 +1,38 @@
 // Schema.org JSON-LD builders. Rendered via <SEOHead> as <script type="application/ld+json">.
-// Keeps structured data consistent and centralized so it is easy to audit.
+// Reads live company data from the store (DB-backed) so structured data stays in
+// sync with admin edits.
 //
-// Entity model: we mint stable @id nodes for the Organization, the
-// LocalBusiness storefront, and the WebSite, then cross-reference them so
-// Google consolidates them into one knowledge-graph entity instead of treating
-// each page's blob as a separate, disconnected thing.
+// Entity model: stable @id nodes for the Organization, LocalBusiness storefront,
+// and WebSite, cross-referenced so Google consolidates one knowledge-graph entity.
 
-import { company, fullAddress } from '../data/company.js'
+import { getCompany } from './store.js'
 
-const SITE = company.website
-
-// Stable node identifiers (URL + fragment) reused across pages.
-export const ORG_ID = `${SITE}/#organization`
-export const LOCALBUSINESS_ID = `${SITE}/#localbusiness`
-export const WEBSITE_ID = `${SITE}/#website`
-
-const LOGO = `${SITE}/og-default.png`
-const sameAs = Object.values(company.social).filter(Boolean)
-
-const postalAddress = {
-  '@type': 'PostalAddress',
-  streetAddress: company.address.street,
-  addressLocality: company.address.city,
-  addressRegion: company.address.state,
-  postalCode: company.address.zip,
-  addressCountry: company.address.countryCode,
+function ctx() {
+  const company = getCompany()
+  const SITE = company.website
+  const a = company.address
+  return {
+    company,
+    SITE,
+    fullAddress: `${a.street}, ${a.city}, ${a.state} ${a.zip}`,
+    ORG_ID: `${SITE}/#organization`,
+    LOCALBUSINESS_ID: `${SITE}/#localbusiness`,
+    WEBSITE_ID: `${SITE}/#website`,
+    LOGO: `${SITE}/og-default.png`,
+    sameAs: Object.values(company.social || {}).filter(Boolean),
+    postalAddress: {
+      '@type': 'PostalAddress',
+      streetAddress: a.street,
+      addressLocality: a.city,
+      addressRegion: a.state,
+      postalCode: a.zip,
+      addressCountry: a.countryCode,
+    },
+  }
 }
 
 export function organizationSchema() {
+  const { company, SITE, ORG_ID, LOGO, sameAs, postalAddress } = ctx()
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -35,12 +40,7 @@ export function organizationSchema() {
     name: company.name,
     legalName: company.legalName,
     url: SITE,
-    logo: {
-      '@type': 'ImageObject',
-      url: LOGO,
-      width: 1200,
-      height: 630,
-    },
+    logo: { '@type': 'ImageObject', url: LOGO, width: 1200, height: 630 },
     image: LOGO,
     email: company.email,
     telephone: company.phone,
@@ -51,6 +51,7 @@ export function organizationSchema() {
 }
 
 export function websiteSchema() {
+  const { company, SITE, WEBSITE_ID, ORG_ID } = ctx()
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
@@ -64,6 +65,7 @@ export function websiteSchema() {
 }
 
 export function localBusinessSchema({ name, areaServed } = {}) {
+  const { company, SITE, LOCALBUSINESS_ID, ORG_ID, LOGO, sameAs, postalAddress, fullAddress } = ctx()
   return {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
@@ -82,7 +84,7 @@ export function localBusinessSchema({ name, areaServed } = {}) {
       latitude: company.geo.lat,
       longitude: company.geo.lng,
     },
-    openingHoursSpecification: company.hours.map((h) => ({
+    openingHoursSpecification: (company.hours || []).map((h) => ({
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
       opens: h.open,
@@ -95,6 +97,7 @@ export function localBusinessSchema({ name, areaServed } = {}) {
 }
 
 export function serviceSchema({ name, description, areaServed } = {}) {
+  const { company, SITE, LOCALBUSINESS_ID } = ctx()
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -123,6 +126,7 @@ export function faqSchema(faqs = []) {
 
 // crumbs: [{ name, path }]
 export function breadcrumbSchema(crumbs = []) {
+  const { SITE } = ctx()
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

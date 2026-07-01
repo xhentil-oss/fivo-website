@@ -23,13 +23,11 @@ const EMPTY = {
   website: '', service: '', location: '', budget: '', message: '',
 }
 
-// Optional submission endpoint. When set (e.g. a Formspree/Web3Forms URL or
-// your own /api/contact serverless function), the form POSTs real JSON. When
-// unset, the form stays in clearly-labeled demo mode (no data leaves the
-// browser). Only VITE_-prefixed vars reach the client, and an endpoint URL is
-// safe to expose — keep any API keys server-side behind your own function.
-const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || ''
-const IS_LIVE = Boolean(CONTACT_ENDPOINT)
+// Submission endpoint. Defaults to the app's own API (/api/contact → MariaDB
+// contact_messages, with server-side validation + rate limiting). Override with
+// VITE_CONTACT_ENDPOINT to POST elsewhere (Formspree/Web3Forms/etc.).
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || '/api/contact'
+const IS_LIVE = true
 
 export default function Contact() {
   const [form, setForm] = useState(EMPTY)
@@ -49,29 +47,13 @@ export default function Contact() {
 
     setStatus('submitting')
 
-    // Spam trap tripped — pretend success without sending anything.
-    if (trap) {
-      setStatus('success')
-      setForm(EMPTY)
-      return
-    }
-
-    // Demo mode: no endpoint configured, so nothing is transmitted.
-    if (!IS_LIVE) {
-      setTimeout(() => {
-        setStatus('success')
-        setForm(EMPTY)
-      }, 600)
-      return
-    }
-
-    // Live mode: POST the form as JSON. The backend MUST re-validate every
-    // field and apply rate limiting / spam checks server-side.
+    // POST the form as JSON. `company_url` is the honeypot; the server drops
+    // submissions where it's filled. The server also re-validates + rate-limits.
     try {
       const res = await fetch(CONTACT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ ...form, source: 'website-contact-form' }),
+        body: JSON.stringify({ ...form, company_url: trap, source: 'website-contact-form' }),
       })
       if (!res.ok) throw new Error(`Request failed with ${res.status}`)
       setStatus('success')

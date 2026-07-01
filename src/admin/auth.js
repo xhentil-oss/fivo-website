@@ -1,45 +1,45 @@
-// ⚠️ DEMO AUTH ONLY — NOT SECURE. ⚠️
-//
-// This is a CLIENT-SIDE MOCK so you can explore the admin UI. It does NOT
-// provide real security: the "password" check happens in the browser and the
-// session is just a localStorage flag. Anyone can bypass it with dev tools.
-//
-// FOR PRODUCTION you MUST replace this with real, server-side authentication:
-//   - Verify credentials on a backend (Supabase Auth, Firebase Auth, Auth0,
-//     or your own Node API with hashed passwords).
-//   - Issue secure, http-only session cookies or short-lived JWTs.
-//   - Enforce role-based access and rate limiting on the server.
-//   - Never ship admin credentials or secrets in frontend code / env that is
-//     bundled to the client (only VITE_-prefixed vars reach the browser).
-// See README → "Security & the admin dashboard".
+// Admin auth — real, server-side. Credentials are verified by the API against
+// bcrypt-hashed passwords in MariaDB; the API returns a JWT that we send as a
+// Bearer token on write requests (see utils/api.js). The client only holds the
+// token + a display copy of the user; it can no longer self-authorize.
 
-const SESSION_KEY = 'fivo_admin_session_v1'
+import { apiLogin, setToken, getToken } from '../utils/api.js'
 
-// Demo credentials (visible on the login screen on purpose — this is a demo).
-const DEMO_USER = 'admin'
-const DEMO_PASS = 'demo1234'
+const SESSION_KEY = 'fivo_admin_user_v1'
 
-export function login(username, password) {
-  // In production: POST to your auth endpoint and let the SERVER decide.
-  if (username === DEMO_USER && password === DEMO_PASS) {
+export async function login(username, password) {
+  try {
+    const user = await apiLogin(username, password)
     try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ user: username, role: 'admin', at: Date.now() }))
-    } catch { /* ignore */ }
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ user: user.username, role: user.role }))
+    } catch {
+      /* ignore */
+    }
     return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e.message || 'Invalid username or password.' }
   }
-  return { ok: false, error: 'Invalid credentials. Try the demo login shown below.' }
 }
 
 export function logout() {
-  try { localStorage.removeItem(SESSION_KEY) } catch { /* ignore */ }
+  setToken(null)
+  try {
+    localStorage.removeItem(SESSION_KEY)
+  } catch {
+    /* ignore */
+  }
 }
 
 export function getSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null') } catch { return null }
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null')
+  } catch {
+    return null
+  }
 }
 
+// A present token gates the UI; the server independently enforces auth on every
+// write, so a tampered client can't actually change data.
 export function isAuthenticated() {
-  return !!getSession()
+  return !!getToken()
 }
-
-export const DEMO_CREDENTIALS = { user: DEMO_USER, pass: DEMO_PASS }
