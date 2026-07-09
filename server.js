@@ -13,7 +13,9 @@ import { getSnapshot } from './server/repo.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isProd = process.env.NODE_ENV === 'production'
-const PORT = Number(process.env.PORT || 5173)
+// Passenger (cPanel) may pass a Unix socket PATH via PORT — pass it through as-is
+// rather than coercing to a number. Falls back to a numeric port elsewhere.
+const PORT = process.env.PORT || 5173
 
 // Safe JSON for embedding in a <script>: escape "<" and the JS line separators
 // U+2028 / U+2029 (valid in JSON but break an inline script if left raw).
