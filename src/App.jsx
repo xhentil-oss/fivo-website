@@ -3,15 +3,26 @@ import { useLocation, Outlet } from 'react-router-dom'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import RequireAuth from './admin/RequireAuth.jsx'
-import { services } from './data/services.js'
-import { locations } from './data/locations.js'
 
-// Route-level code splitting. We use the React Router data-router `lazy` form
-// (`() => ({ Component })`) for public routes so the SSR server (createStaticHandler)
-// can resolve and render each page. Admin routes use React.lazy (client-only).
-const page = (loader) => async () => ({ Component: (await loader()).default })
+// Public pages are imported STATICALLY (not via route `lazy`). With SSR, a lazy
+// route makes the client show a Suspense fallback while the module loads, which
+// doesn't match the fully-rendered server HTML → hydration mismatch that can
+// duplicate the page. Static imports keep SSR and client render identical.
+// Admin pages stay React.lazy — they're client-only (never server-rendered).
+import Home from './pages/Home.jsx'
+import About from './pages/About.jsx'
+import Services from './pages/Services.jsx'
+import ServiceDetail from './pages/ServiceDetail.jsx'
+import ServiceLocationPage from './pages/ServiceLocationPage.jsx'
+import LocationDetail from './pages/LocationDetail.jsx'
+import CaseStudies from './pages/CaseStudies.jsx'
+import Contact from './pages/Contact.jsx'
+import Privacy from './pages/Privacy.jsx'
+import Terms from './pages/Terms.jsx'
+import NotFound from './pages/NotFound.jsx'
 
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
+const Login = lazy(() => import('./admin/Login.jsx'))
 const DashboardHome = lazy(() => import('./admin/DashboardHome.jsx'))
 const ManageServices = lazy(() => import('./admin/ManageServices.jsx'))
 const ManageReviews = lazy(() => import('./admin/ManageReviews.jsx'))
@@ -32,16 +43,14 @@ function PageLoader() {
   )
 }
 
-// Public site shell (header + footer).
+// Public site shell (header + footer). No Suspense needed — pages are static.
 function PublicLayout() {
   return (
     <>
       <ScrollToTop />
       <Header />
       <main id="main">
-        <Suspense fallback={<PageLoader />}>
-          <Outlet />
-        </Suspense>
+        <Outlet />
       </main>
       <Footer />
     </>
@@ -63,42 +72,27 @@ const adminPage = (Component) => (
 )
 
 // Route tree as a data-router array (used by entry-client.jsx + entry-server.jsx).
-// `getStaticPaths` enumerates the concrete URLs to pre-render for each dynamic
-// route. Paths are relative to the parent ('/') prefix.
 export const routes = [
   {
     path: '/',
     element: <PublicLayout />,
     children: [
-      { index: true, lazy: page(() => import('./pages/Home.jsx')) },
-      { path: 'about', lazy: page(() => import('./pages/About.jsx')) },
-      { path: 'services', lazy: page(() => import('./pages/Services.jsx')) },
-      {
-        path: 'services/:serviceSlug',
-        lazy: page(() => import('./pages/ServiceDetail.jsx')),
-        getStaticPaths: () => services.map((s) => `services/${s.slug}`),
-      },
-      {
-        path: 'services/:serviceSlug/:locationSlug',
-        lazy: page(() => import('./pages/ServiceLocationPage.jsx')),
-        getStaticPaths: () =>
-          services.flatMap((s) => locations.map((l) => `services/${s.slug}/${l.slug}`)),
-      },
-      {
-        path: 'locations/:locationSlug',
-        lazy: page(() => import('./pages/LocationDetail.jsx')),
-        getStaticPaths: () => locations.map((l) => `locations/${l.slug}`),
-      },
-      { path: 'case-studies', lazy: page(() => import('./pages/CaseStudies.jsx')) },
-      { path: 'contact', lazy: page(() => import('./pages/Contact.jsx')) },
-      { path: 'privacy', lazy: page(() => import('./pages/Privacy.jsx')) },
-      { path: 'terms', lazy: page(() => import('./pages/Terms.jsx')) },
-      { path: '*', lazy: page(() => import('./pages/NotFound.jsx')) },
+      { index: true, Component: Home },
+      { path: 'about', Component: About },
+      { path: 'services', Component: Services },
+      { path: 'services/:serviceSlug', Component: ServiceDetail },
+      { path: 'services/:serviceSlug/:locationSlug', Component: ServiceLocationPage },
+      { path: 'locations/:locationSlug', Component: LocationDetail },
+      { path: 'case-studies', Component: CaseStudies },
+      { path: 'contact', Component: Contact },
+      { path: 'privacy', Component: Privacy },
+      { path: 'terms', Component: Terms },
+      { path: '*', Component: NotFound },
     ],
   },
 
-  // Admin (no public chrome). Excluded from SSG via includedRoutes in vite.config.js.
-  { path: '/admin/login', lazy: page(() => import('./admin/Login.jsx')) },
+  // Admin (no public chrome, client-only).
+  { path: '/admin/login', element: adminPage(Login) },
   {
     path: '/admin',
     element: <AdminShell />,
