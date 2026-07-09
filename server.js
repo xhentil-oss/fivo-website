@@ -12,7 +12,10 @@ import { createApiRouter } from './server/api.js'
 import { getSnapshot } from './server/repo.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const isProd = process.env.NODE_ENV === 'production'
+// Prod vs dev is chosen by an explicit `--dev` flag (set by `npm run dev`), NOT
+// by NODE_ENV — some hosts (cPanel/CloudLinux) pin NODE_ENV=development in the
+// process env, which would otherwise wrongly run the Vite dev server in prod.
+const isProd = !process.argv.includes('--dev')
 // Passenger (cPanel) may pass a Unix socket PATH via PORT — pass it through as-is
 // rather than coercing to a number. Falls back to a numeric port elsewhere.
 const PORT = process.env.PORT || 5173

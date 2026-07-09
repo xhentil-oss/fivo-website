@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Premium marketing agency website for Fivo LLC — React + Vite + Tailwind",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node server.js --dev",
     "sitemap": "node scripts/generate-sitemap.js",
     "prebuild": "node scripts/generate-sitemap.js",
     "build": "vite build --outDir dist/client && vite build --ssr src/entry-server.jsx --outDir dist/server",
