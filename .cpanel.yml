@@ -1,0 +1,15 @@
+---
+# cPanel Git Version Control deployment.
+# When you click "Deploy HEAD Commit", cPanel checks out the repo into the
+# repository path, then runs these tasks. The touch restarts the Passenger
+# (Node.js) app so the new code is picked up.
+#
+# NOTE: this only restarts. When dependencies OR source that must be rebuilt
+# change (almost always, since this app is built), run in the Node.js venv first:
+#   npm install --include=dev && npm run build
+# then Deploy (or touch tmp/restart.txt).
+deployment:
+  tasks:
+    - export APP_ROOT=$HOME/fivo
+    - /bin/mkdir -p $APP_ROOT/tmp
+    - /bin/touch $APP_ROOT/tmp/restart.txt
